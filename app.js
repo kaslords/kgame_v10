@@ -517,3 +517,5 @@ async function checkShieldStatus() {
 }
 
 document.getElementById("checkShieldButton").addEventListener("click", checkShieldStatus);
+
+//
