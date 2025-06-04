@@ -3,7 +3,7 @@ let contract;
 let selectedTokenId = null;
 let selectedDefenderId = null;
 
-const contractAddress = "0xD53C313325106b6146616a3Cb8d99b1C32DB215E"
+const contractAddress = "0xdc655991d9910B4ea2CF2bFCFb2D19CD98b13A31"
 const ipfsHash = "bafybeibqi2q5csjq5qftukvcwv4s7oqlben7ahcm5avuuaty2ul2qakkne";
 
 async function connectWallet() {
