@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>KasLords Game</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #444343;
+      color: #c5c5c5;
+    }
+    .nft-card {
+      border: 1px solid #f7c00d;
+      padding: 10px;
+      margin: 10px;
+      display: inline-block;
+      width: 200px;
+      background: #0e7474;
+      text-align: center;
+    }
+    .nft-card img {
+      width: 100%;
+      height: auto;
+    }
+    input, button {
+      margin: 5px 0;
+      padding: 5px;
+      width: 50%;
+      background: #000000;
+      color: #ffffff;
+    }
+    #walletNFTs {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    #battleDisplay {
+      display: flex;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    section {
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <h1>KasLords Game</h1>
+  <button id="connectButton">Connect Wallet</button>
+  <p>Connected Wallet: <span id="walletAddress">Not connected</span></p>
+
+  <section>
+    <h3>Select Your Fighter</h3>
+    <div id="walletNFTs"></div>
+    <p id="selectedNFTDisplay">No NFT selected</p>
+  </section>
+
+<section>
+  <h3>Battle</h3>
+  <button onclick="findRandomDefender()">🎲 Find Random Defender</button>
+  <button onclick="fight()">Fight</button>
+  <p id="fightStatus"></p>
+</section>
+
+<div id="defenderLoading" style="display: none; margin-top: 10px;">
+  🔍 Searching for a defender...
+</div>
+
+  <div id="battleDisplay">
+    <div class="nft-card">
+      <h3>🗡️ Attacker</h3>
+      <img id="attackerNFTImage" style="width: 150px;" />
+      <p id="attackerNFTInfo"></pre>
+    </div>
+    <div class="nft-card">
+      <h3>🛡️ Defender</h3>
+      <img id="defenderImage" style="width: 150px;" />
+      <p id="defenderInfo"></pre>
+    </div>
+  </div>
+
+  <section>
+    <h3>🕒 Cooldown Info</h3>
+    <p id="cooldownStatus">Cooldown info will appear here</p>
+  </section>
+
+<p id="selectedActionToken">🎯 Selected NFT ID for Health/Heal/Shield: None</p>
+
+  <section>
+    <h3>Health Info</h3>
+        <button onclick="getHealth()">Get Current Health</button>
+    <p id="healthStatus"></p>
+  </section>
+
+  <section>
+    <h3>Heal Character</h3>
+        <input type="number" id="healAmount" placeholder="Amount to Heal" />
+    <button onclick="healCharacter()">Heal</button>
+    <p id="healStatus"></p>
+
+  <p id="healCostDisplay"></p>
+  <p id="healCostUpdatedDisplay"></p>
+</section>
+
+<section>
+  <h3>🛡️Shield</h3>
+    <input type="number" id="shieldDuration" placeholder="Hours (24–72)" min="24" max="72" />
+  <button id="applyShieldButton">Apply Shield</button>
+  <p id="shieldStatus"></p>
+
+  <p id="shieldCostPreview"></p>
+  <p id="shieldCostDisplay"></p> <!-- Add this one -->
+  <p id="shieldCostUpdatedDisplay"></p>
+
+</section>
+
+<button id="checkShieldButton">Check Shield Status</button>
+<p id="shieldCheckResult"></p>
+
+  <section>
+    <button onclick="getGameGemBalance()">Check Game Gem Balance</button>
+    <p id="gameGemBalance">💎 Gems in Pool: ...</p>
+  </section>
+
+  <section>
+    <h3>💎 Your GEM Balance</h3>
+    <p id="gemBalance">Loading...</p>
+        <p id="claimStatus"></p>
+  </section>
+
+<section>
+  <h3>💰 Pending Rewards</h3>
+  <p id="pendingRewardDisplay">Loading...</p>
+  <button id="checkPendingButton">Check Pending Rewards</button>
+  <button id="claimGemsButton">Claim Gems</button>
+  <p id="claimStatus"></p>
+</section>
+
+  <script src="app.js"></script>
+</body>
+</html>
