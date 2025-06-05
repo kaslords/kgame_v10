@@ -92,18 +92,35 @@ async function fight() {
 
   try {
     const accounts = await web3.eth.getAccounts();
-    const receipt = await contract.methods.fight(selectedTokenId, defenderId).send({ from: accounts[0] });
+    const user = accounts[0];
 
-    // ✅ Parse the Fight event
+    // 🕒 Check cooldowns BEFORE sending transaction
+    const walletLast = await contract.methods.lastWalletFightTime(user).call();
+    const tokenLast = await contract.methods.lastTokenFightTime(selectedTokenId).call();
+    const walletCooldown = await contract.methods.walletCooldownDuration().call();
+    const tokenCooldown = await contract.methods.nftCooldownDuration().call();
+    const now = Math.floor(Date.now() / 1000);
+
+    if (now < Number(walletLast) + Number(walletCooldown)) {
+      alert("⏳ Your wallet is still on cooldown. Please wait for your cooldown to end before attacking again.");
+      return;
+    }
+
+    if (now < Number(tokenLast) + Number(tokenCooldown)) {
+      alert("⏳ This NFT is still cooling down from a previous fight. Please wait for your cooldown to end before attacking again.");
+      return;
+    }
+
+    // Proceed with fight
+    const receipt = await contract.methods.fight(selectedTokenId, defenderId).send({ from: user });
+
     const fightEvent = receipt.events.Fight;
     const damageDealt = fightEvent.returnValues.damageDealt;
     const counterDamage = fightEvent.returnValues.counterDamage;
 
-    // ✅ Get updated health values
     const attackerHealth = await contract.methods.currentHealth(selectedTokenId).call();
     const defenderHealth = await contract.methods.currentHealth(defenderId).call();
 
-    // ✅ Display fight results
     status.innerHTML = `
       ✅ Fight complete between #${selectedTokenId} and #${defenderId}<br>
       🩸 Damage Dealt: ${damageDealt}<br>
@@ -117,9 +134,10 @@ async function fight() {
     await getCooldownStatus();
   } catch (err) {
     console.error("❌ Fight failed:", err);
-    status.innerText = "❌ Fight failed: " + err.message;
+    status.innerText = "❌ Fight failed: " + (err.message || "Unknown error");
   }
 }
+
 
 
 
