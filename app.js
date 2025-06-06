@@ -151,25 +151,40 @@ async function fight() {
 async function getHealth() {
   const id = selectedTokenId;
   const status = document.getElementById("healthStatus");
+
+  if (!id) {
+    status.innerText = "❗ Please select an NFT first.";
+    return;
+  }
+
   try {
-    const hp = await contract.methods.currentHealth(id).call();
-    status.innerText = `❤️ Health: ${hp}`;
+    const current = await contract.methods.currentHealth(id).call();
+    const base = await contract.methods.baseHealth(id).call();
+    status.innerText = `❤️ Health: ${current} of ${base}`;
   } catch (err) {
+    console.error("Error getting health:", err);
     status.innerText = "❌ Error getting health";
   }
 }
 
+
 async function healCharacter() {
   const tokenId = selectedTokenId;
-  const amount = document.getElementById("healAmount").value;
+  const amountInput = document.getElementById("healAmount").value;
   const status = document.getElementById("healStatus");
 
-    if (!selectedTokenId) {
-  status.textContent = "❗ Please select an NFT first.";
-  return;
-}
-  if (!tokenId || !amount) {
-    status.innerText = "❗ Please enter both Token ID and heal amount.";
+  if (!tokenId) {
+    status.textContent = "❗ Please select an NFT first.";
+    return;
+  }
+  if (!amountInput) {
+    status.textContent = "❗ Please enter a heal amount.";
+    return;
+  }
+
+  let amountRequested = Number(amountInput);
+  if (isNaN(amountRequested) || amountRequested <= 0) {
+    status.textContent = "❗ Invalid heal amount.";
     return;
   }
 
@@ -177,10 +192,24 @@ async function healCharacter() {
     const accounts = await web3.eth.getAccounts();
     const user = accounts[0];
 
-    const costPerHP = await contract.methods.healCostPerHP().call();
-    const totalCost = BigInt(costPerHP) * BigInt(amount);
+    // 🧠 Check base and current health
+    const baseHealth = await contract.methods.baseHealth(tokenId).call();
+    const currentHealth = await contract.methods.currentHealth(tokenId).call();
+    const missingHealth = baseHealth - currentHealth;
 
-    // 🔍 Get GEM token address and contract
+    const actualHeal = Math.min(amountRequested, missingHealth);
+    if (actualHeal < amountRequested) {
+      const confirm = window.confirm(`⚠️ You can only heal ${actualHeal} HP. Adjust and continue?`);
+      if (!confirm) {
+        status.textContent = "🛑 Heal cancelled by user.";
+        return;
+      }
+      amountRequested = actualHeal;
+    }
+
+    const costPerHP = await contract.methods.healCostPerHP().call();
+    const totalCost = BigInt(costPerHP) * BigInt(amountRequested);
+
     const gemTokenAddress = await contract.methods.gemsToken().call();
     const gemAbi = [
       {
@@ -202,17 +231,17 @@ async function healCharacter() {
 
     const allowance = await gem.methods.allowance(user, contract.options.address).call();
     if (BigInt(allowance) < totalCost) {
-      status.innerText = "🔓 Approving GEMs for healing...";
+      status.textContent = "🔓 Approving GEMs for healing...";
       await gem.methods.approve(contract.options.address, web3.utils.toWei("1000000", "ether")).send({ from: user });
     }
 
-    status.innerText = "💉 Sending heal transaction...";
-    await contract.methods.heal(tokenId, amount).send({ from: user });
+    status.textContent = "💉 Sending heal transaction...";
+    await contract.methods.heal(tokenId, amountRequested).send({ from: user });
 
-    status.innerText = `✅ Token #${tokenId} healed by ${amount} HP`;
+    status.textContent = `✅ Token #${tokenId} healed by ${amountRequested} HP`;
   } catch (err) {
     console.error("Healing failed:", err);
-    status.innerText = "❌ Healing failed: " + err.message;
+    status.textContent = "❌ Healing failed: " + err.message;
   }
 }
 
