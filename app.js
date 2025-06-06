@@ -3,7 +3,7 @@ let contract;
 let selectedTokenId = null;
 let selectedDefenderId = null;
 
-const contractAddress = "0xdc655991d9910B4ea2CF2bFCFb2D19CD98b13A31"
+const contractAddress = "0x7aFcF33E1E15F18e8C98f0494485b23B30C1F2A8"
 const ipfsHash = "bafybeibqi2q5csjq5qftukvcwv4s7oqlben7ahcm5avuuaty2ul2qakkne";
 
 async function connectWallet() {
@@ -87,6 +87,13 @@ async function fight() {
 
   if (!selectedTokenId || !defenderId) {
     alert("Select a fighter and enter a defender ID.");
+    return;
+  }
+  
+    // 🛡️ Check attacker has at least 500 HP
+  const hp = await contract.methods.currentHealth(selectedTokenId).call();
+  if (Number(hp) < 500) {
+    alert("⚠️ Your NFT must have at least 500 health to attack.");
     return;
   }
 
