@@ -89,13 +89,35 @@ async function fight() {
     alert("Select a fighter and enter a defender ID.");
     return;
   }
-  
-    // 🛡️ Check attacker has at least 500 HP
-  const hp = await contract.methods.currentHealth(selectedTokenId).call();
-  if (Number(hp) < 500) {
+
+try {
+  // Check if defender is shielded
+  const shieldUntil = await contract.methods.shieldUntil(defenderId).call();
+  const now = Math.floor(Date.now() / 1000);
+  if (Number(shieldUntil) > now) {
+    alert("🛡️ This defender is currently shielded. Please choose another target.");
+    return;
+  }
+
+  // Check if defender is too weak (below 7.5% base health)
+  const base = await contract.methods.baseHealth(defenderId).call();
+  const defenderHP = await contract.methods.currentHealth(defenderId).call();
+  const minRequired = Math.floor(Number(base) * 0.075);
+  if (Number(defenderHP) < minRequired) {
+    alert(`⚠️ Defender's health is too low (${defenderHP}/${base}). You must choose a stronger target.`);
+    return;
+  }
+
+  // 🛡️ Check attacker has at least 500 HP
+  const attackerHP = await contract.methods.currentHealth(selectedTokenId).call();
+  if (Number(attackerHP) < 500) {
     alert("⚠️ Your NFT must have at least 500 health to attack.");
     return;
   }
+  } catch (err) {
+  console.error("❌ Pre-fight checks failed:", err);
+  alert("❌ Error occurred during pre-fight checks.");
+}
 
   try {
     const accounts = await web3.eth.getAccounts();
