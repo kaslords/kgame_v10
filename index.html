@@ -2,48 +2,91 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KasLords Game</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background: #444343;
-      color: #c5c5c5;
-    }
-    .nft-card {
-      border: 1px solid #f7c00d;
-      padding: 10px;
-      margin: 10px;
-      display: inline-block;
-      width: 200px;
-      background: #0e7474;
-      text-align: center;
-    }
-    .nft-card img {
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #353535;
+    color: #baf7ffce;
+  }
+
+  .nft-card {
+    border: 1px solid #f7150d;
+    padding: 10px;
+    margin: 10px;
+    display: inline-block;
+    width: 200px;
+    background: #0e7474;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .nft-card img {
+    width: 100%;
+    height: auto;
+  }
+
+  .nft-card p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    line-height: 1.2;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  input,
+  button {
+    margin: 5px 0;
+    padding: 5px;
+    width: 50%;
+    background: #000000;
+    color: #ffffff;
+  }
+
+  #walletNFTsWrapper {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 10px;
+  }
+
+  #walletNFTs {
+    display: inline-flex;
+    flex-wrap: nowrap;
+  }
+
+  #battleDisplay {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  section {
+    margin-top: 30px;
+  }
+
+  /* ✅ Mobile Responsiveness */
+  @media (max-width: 600px) {
+    input,
+    button {
       width: 100%;
-      height: auto;
     }
-    input, button {
-      margin: 5px 0;
-      padding: 5px;
-      width: 50%;
-      background: #000000;
-      color: #ffffff;
-    }
-    #walletNFTs {
-      display: flex;
-      flex-wrap: wrap;
-    }
+
     #battleDisplay {
-      display: flex;
-      gap: 20px;
-      margin-top: 20px;
+      flex-direction: column;
+      align-items: center;
     }
-    section {
-      margin-top: 30px;
+
+    #walletNFTs {
+      justify-content: center;
     }
-  </style>
+  }
+</style>
 </head>
 <body>
   <h1>KasLords Game</h1>
@@ -52,7 +95,10 @@
 
   <section>
     <h3>Select Your Fighter</h3>
-    <div id="walletNFTs"></div>
+    <div id="walletNFTsWrapper">
+  <div id="walletNFTs"></div>
+</div>
+
     <p id="selectedNFTDisplay">No NFT selected</p>
   </section>
 
