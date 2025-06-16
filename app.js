@@ -214,14 +214,29 @@ async function healCharacter() {
     const accounts = await web3.eth.getAccounts();
     const user = accounts[0];
 
-    // 🧠 Check base and current health
-    const baseHealth = await contract.methods.baseHealth(tokenId).call();
-    const currentHealth = await contract.methods.currentHealth(tokenId).call();
-    const missingHealth = baseHealth - currentHealth;
+    // 🔍 Fetch health-related data
+    const [baseHealth, currentHealth, lastHealTime] = await Promise.all([
+      contract.methods.baseHealth(tokenId).call(),
+      contract.methods.currentHealth(tokenId).call(),
+      contract.methods.lastHealTime(tokenId).call()
+    ]);
 
+    // 🕒 Estimate passive healing
+    const now = Math.floor(Date.now() / 1000);
+    const elapsed = now - Number(lastHealTime);
+    let passiveHeal = 0;
+    if (elapsed >= 3600) {
+      const hoursPassed = Math.floor(elapsed / 3600);
+      passiveHeal = Math.floor(Number(baseHealth) * hoursPassed / 100);
+    }
+
+    const effectiveHealth = Math.min(Number(currentHealth) + passiveHeal, Number(baseHealth));
+    const missingHealth = Number(baseHealth) - effectiveHealth;
+
+    // 🛑 Adjust request if too much
     const actualHeal = Math.min(amountRequested, missingHealth);
     if (actualHeal < amountRequested) {
-      const confirm = window.confirm(`⚠️ You can only heal ${actualHeal} HP. Adjust and continue?`);
+      const confirm = window.confirm(`⚠️ You can only heal ${actualHeal} HP (considering passive recovery). Adjust and continue?`);
       if (!confirm) {
         status.textContent = "🛑 Heal cancelled by user.";
         return;
@@ -232,6 +247,7 @@ async function healCharacter() {
     const costPerHP = await contract.methods.healCostPerHP().call();
     const totalCost = BigInt(costPerHP) * BigInt(amountRequested);
 
+    // 💎 Setup GEM contract
     const gemTokenAddress = await contract.methods.gemsToken().call();
     const gemAbi = [
       {
@@ -260,12 +276,21 @@ async function healCharacter() {
     status.textContent = "💉 Sending heal transaction...";
     await contract.methods.heal(tokenId, amountRequested).send({ from: user });
 
-    status.textContent = `✅ Token #${tokenId} healed by ${amountRequested} HP`;
+    // Calculate and show passive healing
+const finalHealth = await contract.methods.currentHealth(tokenId).call();
+const actualPassiveApplied = finalHealth - currentHealth - amountRequested;
+
+if (actualPassiveApplied > 0) {
+  status.textContent = `✅ Token #${tokenId} healed by ${amountRequested} HP and ${actualPassiveApplied} passive HP`;
+} else {
+  status.textContent = `✅ Token #${tokenId} healed by ${amountRequested} HP`;
+}
   } catch (err) {
     console.error("Healing failed:", err);
     status.textContent = "❌ Healing failed: " + err.message;
   }
 }
+
 
 
 // Apply shield to a token
