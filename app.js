@@ -2,17 +2,38 @@ let web3;
 let contract;
 let selectedTokenId = null;
 let selectedDefenderId = null;
+let selectedNFTId = null;
 
 const contractAddress = "0x7aFcF33E1E15F18e8C98f0494485b23B30C1F2A8"
 const ipfsHash = "bafybeibqi2q5csjq5qftukvcwv4s7oqlben7ahcm5avuuaty2ul2qakkne";
 
+function updateFightButtonState() {
+  const fightButton = document.getElementById("fightButton");
+  if (selectedDefenderId) {
+    fightButton.disabled = false;
+    fightButton.classList.remove("opacity-50", "cursor-not-allowed");
+    fightButton.classList.add("hover:bg-[#468C85]");
+  } else {
+    fightButton.disabled = true;
+    fightButton.classList.add("opacity-50", "cursor-not-allowed");
+    fightButton.classList.remove("hover:bg-[#468C85]");
+  }
+}
+
 async function connectWallet() {
-  if (window.ethereum) {
+  if (typeof window.ethereum !== "undefined") {
     try {
-      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      const walletAddress = accounts[0];
+      document.getElementById("walletAddress").textContent = walletAddress;
+      document.getElementById("walletInfo").classList.remove("hidden");
+      document.getElementById("connectButton").textContent = "Disconnect";
+      document.getElementById("connectButton").classList.add("bg-[#468C85]");
+      document.getElementById("connectButton").classList.remove("bg-[#346F68]");
+      document.getElementById("connectButton").disabled = false;
       web3 = new Web3(window.ethereum);
-      const accounts = await web3.eth.getAccounts();
-      document.getElementById("walletAddress").textContent = accounts[0];
       const response = await fetch("abi.json");
       const abi = await response.json();
       contract = new web3.eth.Contract(abi, contractAddress);
@@ -20,15 +41,21 @@ async function connectWallet() {
       await getGemBalance();
       await checkPendingRewards();
       await getGameCosts();
-    } catch (err) {
-      console.error("Wallet connection error:", err);
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
     }
   } else {
-    alert("MetaMask not found.");
+    alert("Please install MetaMask to use this feature!");
   }
 }
 
-document.getElementById("connectButton").addEventListener("click", connectWallet);
+document.getElementById("connectButton").addEventListener("click", function() {
+  if (document.getElementById("connectButton").textContent === "Disconnect") {
+    location.reload();
+  } else {
+    connectWallet();
+  }
+});
 
 async function loadWalletNFTs() {
   const accounts = await web3.eth.getAccounts();
@@ -45,26 +72,66 @@ async function loadWalletNFTs() {
     const rank = await contract.methods.tokenRank(tokenId).call();
 
     const card = document.createElement("div");
-   card.className = "nft-card";
-   card.innerHTML = `
-  <img src="${imgUrl}" />
-  <p>#${tokenId} - ${metadata.name} (Rank ${rank})</p>
-`;
+    card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-[#346F68] hover:shadow-[0_0_10px_#346F68]";
+    if (selectedTokenId === tokenId) {
+      card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-[#346F68] shadow-[0_0_15px_#346F68] cursor-pointer scale-105 hover:shadow-[0_0_20px_#346F68]";
+    }
 
-const button = document.createElement("button");
-button.textContent = "Use This One";
-button.onclick = () => selectNFT(tokenId);
-card.appendChild(button);
+    card.onclick = () => selectNFT(tokenId);
+    
+    card.innerHTML = `      <div
+        class="absolute w-4 h-4 bg-gradient-to-br from-gray-900 to-gray-800 rounded-sm opacity-70 -top-[8px] -left-[8px] rotate-45"
+      ></div>
+      <div
+        class="absolute w-4 h-4 bg-gradient-to-br from-gray-900 to-gray-800 rounded-sm opacity-70 -top-[8px] -right-[8px] rotate-45"
+      ></div>
+      <div
+        class="absolute w-4 h-4 bg-gradient-to-br from-gray-900 to-gray-800 rounded-sm opacity-70 -bottom-[8px] -left-[8px] rotate-45"
+      ></div>
+      <div
+        class="absolute w-4 h-4 bg-gradient-to-br from-gray-900 to-gray-800 rounded-sm opacity-70 -bottom-[8px] -right-[8px] rotate-45"
+      ></div>
+      <div class="relative z-10">
+        <img
+          src="${imgUrl}"
+          alt="NFT ${tokenId}"
+          class="w-full h-auto rounded-sm"
+        />
+        <p class="mt-2 text-sm text-gray-300">
+          KasLords #${tokenId}
+        </p>
+        <p class="text-xs text-gray-400">
+          (Rank ${rank})</p>
+      </div>
+    `;
 
-container.appendChild(card);
+    const button = document.createElement("button");
+    button.textContent = "Select";
+    button.className = "bg-[#346F68] hover:bg-[#468C85] text-white px-4 py-0 rounded transition-colors duration-200 mt-2";
+    button.onclick = (e) => {
+      e.stopPropagation(); // Prevent card click when clicking button
+      selectNFT(tokenId);
+    };
+    card.appendChild(button);
 
+    container.appendChild(card);
   }
 }
 
 async function selectNFT(tokenId) {
   selectedTokenId = tokenId;
-  document.getElementById("selectedNFTDisplay").textContent = `Selected NFT: #${tokenId}`;
-  document.getElementById("selectedActionToken").textContent = `🎯 Selected NFT ID for Health/Heal/Shield: #${tokenId}`;
+  document.getElementById("selectedNFTDisplay").textContent = `Selected NFT ID: ${tokenId}`;
+  document.getElementById("selectedActionToken").textContent = `🎯 Selected NFT ID for Health/Heal/Shield: ${tokenId}`;
+  
+  // Update the visual selection
+  const cards = document.querySelectorAll('.nft-card');
+  cards.forEach(card => {
+    if (card.querySelector('p').textContent.includes(tokenId)) {
+      card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-[#346F68] shadow-[0_0_15px_#346F68] cursor-pointer scale-105 hover:shadow-[0_0_20px_#346F68]";
+    } else {
+      card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-[#346F68] hover:shadow-[0_0_10px_#346F68]";
+    }
+  });
   getCooldownStatus();
 
   // Show attacker preview
@@ -560,6 +627,7 @@ selectedDefenderId = tokenId;
 
 alert(`🎯 Defender found: Token #${tokenId}`);
 loader.style.display = "none";
+updateFightButtonState();
 return;
 
 
@@ -592,6 +660,7 @@ async function getGameCosts() {
     console.error("❌ Failed to fetch game costs:", err);
   }
 }
+
 async function checkShieldStatus() {
   const tokenId = selectedTokenId;
   const display = document.getElementById("shieldCheckResult");
@@ -618,5 +687,3 @@ async function checkShieldStatus() {
 }
 
 document.getElementById("checkShieldButton").addEventListener("click", checkShieldStatus);
-
-//

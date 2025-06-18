@@ -5,12 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KasLords Game</title>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.8.2/dist/web3.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Almendra:ital,wght@0,400;0,700;1,400;1,700&family=MedievalSharp&display=swap" rel="stylesheet"/>
+
+
 <style>
   body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
+    font-family: 'MedievalSharp', serif !important;
+        padding: 20px;
     background: #353535;
     color: #baf7ffce;
+  }
+
+  .fancy-border {
+    box-shadow: 
+      inset 0 0 22px rgba(0, 0, 0, 0.85), /* Slightly scaled-down carved effect */
+      0 0 13px rgba(0, 0, 0, 0.65), /* Slightly scaled-down outer shadow */
+      0 0 5px rgba(17, 24, 39, 0.45); /* Subtle glow with slightly lower opacity */
+  }
+  .fancy-border-sm {
+    box-shadow: 
+      inset 0 0 15px rgba(0, 0, 0, 0.7), /* Unchanged, already scaled */
+      0 0 10px rgba(0, 0, 0, 0.5), /* Unchanged, already scaled */
+      0 0 5px rgba(17, 24, 39, 0.5); /* Unchanged */
+  }
+  .inner-border {
+    box-shadow: 
+      inset 0 0 10px rgba(0, 0, 0, 0.5), /* Unchanged */
+      0 0 5px rgba(0, 0, 0, 0.3); /* Unchanged */
+  }
+  .button-border {
+    box-shadow: 
+      0 0 5px rgba(55, 65, 81, 0.4), /* Unchanged */
+      inset 0 0 3px rgba(255, 255, 255, 0.2); /* Unchanged */
   }
 
   .nft-card {
@@ -18,13 +45,31 @@
     padding: 10px;
     margin: 10px;
     display: inline-block;
-    width: 200px;
-    background: #0e7474;
+    width: 180px;
+    /* background: #0e7474; */
     text-align: center;
     box-sizing: border-box;
     overflow: hidden;
     white-space: normal;
     word-wrap: break-word;
+  }
+
+  .battle-nft-card {
+    border: 1px solid #f7150d;
+    padding: 5px;
+    margin: 10px;
+    display: inline-block;
+    width: 200px;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .battle-nft-card img {
+    display: block;
+    margin: 0 auto;
   }
 
   .nft-card img {
@@ -45,8 +90,31 @@
     margin: 5px 0;
     padding: 5px;
     width: 50%;
-    background: #000000;
     color: #ffffff;
+  }
+
+  input {
+    width: 200px;
+  }
+
+  button:not([class*="bg-"]) {
+    background: #000000;
+  }
+
+  .battle-button {
+    width: auto !important;
+    min-width: 150px;
+    margin-right: 10px;
+  }
+
+  .battle-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background-color: #6b7280 !important;
+  }
+
+  .battle-button:disabled:hover {
+    background-color: #6b7280 !important;
   }
 
   #walletNFTsWrapper {
@@ -62,7 +130,7 @@
 
   #battleDisplay {
     display: flex;
-    gap: 20px;
+    gap: 10px;
     margin-top: 20px;
   }
 
@@ -77,112 +145,217 @@
       width: 100%;
     }
 
-    #battleDisplay {
-      flex-direction: column;
-      align-items: center;
+    input {
+      width: 200px;
     }
 
     #walletNFTs {
       justify-content: center;
     }
+
+    .flex-container {
+      flex-direction: column;
+    }
+
+    .tab-content section {
+      margin-bottom: 20px;
+    }
+
+    .tab-content h3 {
+      margin-bottom: 10px;
+    }
+
+    .tab-content button {
+      margin-bottom: 10px;
+    }
+
+    .tab-content p {
+      margin-bottom: 8px;
+    }
+  }
+
+  .tab-container {
+    margin-top: 30px;
+  }
+
+  .tab-buttons {
+    display: flex;
+    border-bottom: 2px solid #346F68;
+    margin-bottom: 20px;
+  }
+
+  .tab-button {
+    background: #1f2937;
+    border: none;
+    color: #9ca3af;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 3px solid transparent;
+    border-radius: 0.125rem;
+    box-shadow: 
+      inset 0 0 15px rgba(0, 0, 0, 0.7),
+      0 0 10px rgba(0, 0, 0, 0.5),
+      0 0 5px rgba(17, 24, 39, 0.5);
+  }
+
+  .tab-button.active {
+    background: #374151;
+    color: white;
+    border-bottom: 3px solid #468C85;
+  }
+
+  .tab-button:hover:not(.active) {
+    background: #374151;
+    color: #d1d5db;
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
   }
 </style>
 </head>
-<body>
-  <h1>KasLords Game</h1>
-  <button id="connectButton">Connect Wallet</button>
-  <p>Connected Wallet: <span id="walletAddress">Not connected</span></p>
-
-  <section>
-    <h3>Select Your Fighter</h3>
-    <div id="walletNFTsWrapper">
-  <div id="walletNFTs"></div>
-</div>
-
-    <p id="selectedNFTDisplay">No NFT selected</p>
-  </section>
-
-<section>
-  <h3>Battle</h3>
-  <button onclick="findRandomDefender()">🎲 Find Random Defender</button>
-  <button onclick="fight()">Fight</button>
-  <p id="fightStatus"></p>
-</section>
-
-<div id="defenderLoading" style="display: none; margin-top: 10px;">
-  🔍 Searching for a defender...
-</div>
-
-  <div id="battleDisplay">
-    <div class="nft-card">
-      <h3>🗡️ Attacker</h3>
-      <img id="attackerNFTImage" style="width: 150px;" />
-      <p id="attackerNFTInfo"></pre>
-    </div>
-    <div class="nft-card">
-      <h3>🛡️ Defender</h3>
-      <img id="defenderImage" style="width: 150px;" />
-      <p id="defenderInfo"></pre>
+<body class="min-h-screen mx-auto max-w-6xl bg-gray-900 text-cyan-200 p-5 font-['MedievalSharp']">
+  <div class="flex justify-between items-start mb-8">
+    <h1 class="text-3xl text-white">KasLords </h1>
+    <div class="relative">
+      <button id="connectButton" class="w-full bg-[#346F68] hover:bg-[#468C85] text-white px-4 py-2 rounded transition-colors duration-200">Connect</button>
+      <p id="walletInfo" class="text-xs md:text-sm mt-2 hidden absolute right-0 whitespace-nowrap">Connected Wallet: <span id="walletAddress" class="text-gray-400"></span></p>
     </div>
   </div>
 
-  <section>
-    <h3>🕒 Cooldown Info</h3>
-    <p id="cooldownStatus">Cooldown info will appear here</p>
-  </section>
+  <div class="tab-container">
+    <div class="tab-buttons">
+      <button class="tab-button active" onclick="openTab('battle')">⚔️ Battle</button>
+      <button class="tab-button" onclick="openTab('health')">❤️ Health</button>
+      <button class="tab-button" onclick="openTab('gems')">💎 Gems</button>
+    </div>
 
-<p id="selectedActionToken">🎯 Selected NFT ID for Health/Heal/Shield: None</p>
+    <div id="battle" class="tab-content active">
+      <section>
+        <h3>Select Your Fighter</h3>
+        <div id="walletNFTsWrapper">
+      <div id="walletNFTs"></div>
+    </div>
 
-  <section>
-    <h3>Health Info</h3>
-        <button onclick="getHealth()">Get Current Health</button>
-    <p id="healthStatus"></p>
-  </section>
+        <p id="selectedNFTDisplay">No NFT selected</p>
+      </section>
 
-  <section>
-    <h3>Heal Character</h3>
-        <input type="number" id="healAmount" placeholder="Amount to Heal" />
-    <button onclick="healCharacter()">Heal</button>
-    <p id="healStatus"></p>
+      <div id="defenderLoading" style="display: none; margin-top: 10px;">
+        🔍 Searching for a defender...
+      </div>
 
-  <p id="healCostDisplay"></p>
-  <p id="healCostUpdatedDisplay"></p>
-</section>
+      <div id="battleDisplay">
+        <div class="battle-nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800">
+          <h3>🗡️ Attacker</h3>
+          <img id="attackerNFTImage" style="width: 150px;" />
+          <p id="attackerNFTInfo"></pre>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; color: #ef4444; text-shadow: 0 0 5px #ef4444; margin: 0 10px;">⚔️ VS</div>
+        <div class="battle-nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800">
+          <h3>🛡️ Defender</h3>
+          <img id="defenderImage" style="width: 150px;" />
+          <p id="defenderInfo"></pre>
+        </div>
+      </div>
 
-<section>
-  <h3>🛡️Shield</h3>
-    <input type="number" id="shieldDuration" placeholder="Hours (24–72)" min="24" max="72" />
-  <button id="applyShieldButton">Apply Shield</button>
-  <p id="shieldStatus"></p>
+      <section>
+        <h3>🕒 Cooldown Info</h3>
+        <p id="cooldownStatus">Cooldown info will appear here</p>
+      </section>
 
-  <p id="shieldCostPreview"></p>
-  <p id="shieldCostDisplay"></p> <!-- Add this one -->
-  <p id="shieldCostUpdatedDisplay"></p>
+      <p id="selectedActionToken">🎯 Selected NFT ID for Health/Heal/Shield: None</p>
 
-</section>
+      <section>
+        <h3>Battle</h3>
+        <button class="battle-button bg-[#346F68] hover:bg-[#468C85] text-white px-4 py-2 rounded transition-colors duration-200" onclick="findRandomDefender()">🎲 Find Defender</button>
+        <button id="fightButton" class="battle-button bg-[#346F68] hover:bg-[#468C85] text-white px-4 py-2 rounded transition-colors duration-200" onclick="fight()" disabled>⚔️ Battle</button>
+        <p id="fightStatus"></p>
+      </section>
+    </div>
 
-<button id="checkShieldButton">Check Shield Status</button>
-<p id="shieldCheckResult"></p>
+    <div id="health" class="tab-content">
+      <div style="display: flex; gap: 20px;" class="flex-container">
+        <section style="flex: 1;">
+          <h3>❤️ Health Info</h3>
+              <button class="battle-button bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors duration-200" onclick="getHealth()">💓 Get Current Health</button>
+          <p id="healthStatus"></p>
+        </section>
 
-  <section>
-    <button onclick="getGameGemBalance()">Check Game Gem Balance</button>
-    <p id="gameGemBalance">💎 Gems in Pool: ...</p>
-  </section>
+        <section style="flex: 1;">
+          <h3>🧪 Heal Character</h3>
+              <input type="number" id="healAmount" placeholder="Amount to Heal" />
+          <button class="battle-button bg-[#346F68] hover:bg-[#468C85] text-white px-4 py-2 rounded transition-colors duration-200" onclick="healCharacter()">🧪 Heal</button>
+          <p id="healStatus"></p>
 
-  <section>
-    <h3>💎 Your GEM Balance</h3>
-    <p id="gemBalance">Loading...</p>
+        <p id="healCostDisplay"></p>
+        <p id="healCostUpdatedDisplay"></p>
+        </section>
+      </div>
+
+      <section>
+        <h3>🛡️ Shield</h3>
+          <input type="number" id="shieldDuration" placeholder="Hours (24–72)" min="24" max="72" />
+        <button class="battle-button bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded transition-colors duration-200" id="applyShieldButton">🛡️ Apply Shield</button>
+        <p id="shieldStatus"></p>
+
+        <p id="shieldCostPreview"></p>
+        <p id="shieldCostDisplay"></p>
+        <p id="shieldCostUpdatedDisplay"></p>
+      </section>
+
+      <button class="battle-button bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded transition-colors duration-200" id="checkShieldButton">🔍 Check Shield Status</button>
+      <p id="shieldCheckResult"></p>
+    </div>
+
+    <div id="gems" class="tab-content">
+      <section>
+        <h3>💎 Game Gem Balance</h3>
+        <button class="battle-button bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded transition-colors duration-200" onclick="getGameGemBalance()">💰 Check Game Gem Balance</button>
+        <p id="gameGemBalance">💎 Gems in Pool: ...</p>
+      </section>
+
+      <section>
+        <h3>💎 Your GEM Balance</h3>
+        <p id="gemBalance">Loading...</p>
+            <p id="claimStatus"></p>
+      </section>
+
+      <section>
+        <h3>💰 Pending Rewards</h3>
+        <p id="pendingRewardDisplay">Loading...</p>
+        <button class="battle-button bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors duration-200" id="checkPendingButton">🔍 Check Pending Rewards</button>
+        <button class="battle-button bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded transition-colors duration-200" id="claimGemsButton">💸 Claim Gems</button>
         <p id="claimStatus"></p>
-  </section>
-
-<section>
-  <h3>💰 Pending Rewards</h3>
-  <p id="pendingRewardDisplay">Loading...</p>
-  <button id="checkPendingButton">Check Pending Rewards</button>
-  <button id="claimGemsButton">Claim Gems</button>
-  <p id="claimStatus"></p>
-</section>
+      </section>
+    </div>
+  </div>
 
   <script src="app.js"></script>
+  <script>
+  function openTab(tabName) {
+    // Hide all tab contents
+    const tabContents = document.getElementsByClassName('tab-content');
+    for (let content of tabContents) {
+      content.classList.remove('active');
+    }
+
+    // Remove active class from all tab buttons
+    const tabButtons = document.getElementsByClassName('tab-button');
+    for (let button of tabButtons) {
+      button.classList.remove('active');
+    }
+
+    // Show the selected tab content
+    document.getElementById(tabName).classList.add('active');
+    
+    // Add active class to the clicked button
+    event.target.classList.add('active');
+  }
+  </script>
 </body>
 </html>
