@@ -12,11 +12,13 @@ function updateFightButtonState() {
   if (selectedDefenderId) {
     fightButton.disabled = false;
     fightButton.classList.remove("opacity-50", "cursor-not-allowed");
-    fightButton.classList.add("hover:bg-[#468C85]");
+    fightButton.classList.remove("bg-[#346F68]", "hover:bg-[#468C85]");
+    fightButton.classList.add("bg-orange-600", "hover:bg-orange-700");
   } else {
     fightButton.disabled = true;
     fightButton.classList.add("opacity-50", "cursor-not-allowed");
-    fightButton.classList.remove("hover:bg-[#468C85]");
+    fightButton.classList.remove("bg-orange-600", "hover:bg-orange-700");
+    fightButton.classList.add("bg-[#346F68]", "hover:bg-[#468C85]");
   }
 }
 
@@ -72,9 +74,9 @@ async function loadWalletNFTs() {
     const rank = await contract.methods.tokenRank(tokenId).call();
 
     const card = document.createElement("div");
-    card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-[#346F68] hover:shadow-[0_0_10px_#346F68]";
+    card.className = "nft-card etched-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-[#346F68] hover:shadow-[0_0_10px_#346F68]";
     if (selectedTokenId === tokenId) {
-      card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-[#346F68] shadow-[0_0_15px_#346F68] cursor-pointer scale-105 hover:shadow-[0_0_20px_#346F68]";
+      card.className = "nft-card etched-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-[#346F68] shadow-[0_0_15px_#346F68] cursor-pointer scale-105 hover:shadow-[0_0_20px_#346F68]";
     }
 
     card.onclick = () => selectNFT(tokenId);
@@ -127,9 +129,9 @@ async function selectNFT(tokenId) {
   const cards = document.querySelectorAll('.nft-card');
   cards.forEach(card => {
     if (card.querySelector('p').textContent.includes(tokenId)) {
-      card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-[#346F68] shadow-[0_0_15px_#346F68] cursor-pointer scale-105 hover:shadow-[0_0_20px_#346F68]";
+      card.className = "nft-card etched-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-[#346F68] shadow-[0_0_15px_#346F68] cursor-pointer scale-105 hover:shadow-[0_0_20px_#346F68]";
     } else {
-      card.className = "nft-card fancy-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-[#346F68] hover:shadow-[0_0_10px_#346F68]";
+      card.className = "nft-card etched-border-sm relative rounded-sm p-2 bg-gray-800 dark:bg-gray-800 border-[6px] border-gray-800 cursor-pointer transition-all duration-200 hover:scale-105 hover:border-[#346F68] hover:shadow-[0_0_10px_#346F68]";
     }
   });
   getCooldownStatus();
