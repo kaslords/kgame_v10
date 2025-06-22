@@ -597,9 +597,6 @@ async function findRandomDefender() {
       const exists = await contract.methods.tokenExists(tokenId).call();
       if (!exists) continue;
 
-      const health = await contract.methods.currentHealth(tokenId).call();
-      if (health == 0) continue;
-
       const shieldUntil = await contract.methods.shieldUntil(tokenId).call();
       if (shieldUntil > Math.floor(Date.now() / 1000)) continue;
 
