@@ -97,6 +97,29 @@
     width: 200px;
   }
 
+  /* Specific styling for heal and shield inputs to improve legibility */
+  #healAmount,
+  #shieldDuration {
+    background-color: #1f2937;
+    border: 1px solid #4b5563;
+    color: #ffffff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  #healAmount::placeholder,
+  #shieldDuration::placeholder {
+    color: #9ca3af;
+  }
+
+  #healAmount:focus,
+  #shieldDuration:focus {
+    outline: none;
+    border-color: #346F68;
+    box-shadow: 0 0 0 2px rgba(52, 111, 104, 0.2);
+  }
+
   button:not([class*="bg-"]) {
     background: #000000;
   }
