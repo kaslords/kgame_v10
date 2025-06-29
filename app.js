@@ -4,7 +4,7 @@ let selectedTokenId = null;
 let selectedDefenderId = null;
 let selectedNFTId = null;
 
-const contractAddress = "0x7aFcF33E1E15F18e8C98f0494485b23B30C1F2A8"
+const contractAddress = "0x0B83A60b2E66CF5Ab555E301FD4c80aDDC4BBFB9"
 const ipfsHash = "bafybeibqi2q5csjq5qftukvcwv4s7oqlben7ahcm5avuuaty2ul2qakkne";
 
 function updateFightButtonState() {
@@ -170,7 +170,7 @@ try {
 
   // Check if defender is too weak (below 7.5% base health)
   const base = await contract.methods.baseHealth(defenderId).call();
-  const defenderHP = await contract.methods.currentHealth(defenderId).call();
+  const defenderHP = await contract.methods.effectiveHealth(defenderId).call();
   const minRequired = Math.floor(Number(base) * 0.075);
   if (Number(defenderHP) < minRequired) {
     alert(`⚠️ Defender's health is too low (${defenderHP}/${base}). You must choose a stronger target.`);
@@ -596,6 +596,12 @@ async function findRandomDefender() {
     try {
       const exists = await contract.methods.tokenExists(tokenId).call();
       if (!exists) continue;
+      // Check if defender is too weak (below 7.5% base health)
+     const base = await contract.methods.baseHealth(tokenId).call();
+     const defenderHP = await contract.methods.effectiveHealth(tokenId).call();
+     const minRequired = Math.floor(Number(base) * 0.075);
+     if (Number(defenderHP) < minRequired) continue;
+
 
       const shieldUntil = await contract.methods.shieldUntil(tokenId).call();
       if (shieldUntil > Math.floor(Date.now() / 1000)) continue;
